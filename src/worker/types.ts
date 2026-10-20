@@ -1,5 +1,18 @@
 // 共有型定義
 
+// WebRTC 最小型定義（DOM lib との競合回避のためローカル定義）
+export interface RTCSessionDescriptionInit {
+  type: 'offer' | 'answer' | 'pranswer' | 'rollback';
+  sdp?: string;
+}
+
+export interface RTCIceCandidateInit {
+  candidate: string;
+  sdpMid?: string | null;
+  sdpMLineIndex?: number | null;
+  usernameFragment?: string | null;
+}
+
 // シグナリングメッセージ
 export type SignalMessage =
   | { type: 'join'; roomId: string; userId: string }
@@ -51,14 +64,14 @@ export interface RoomState {
 // Worker 環境バインディング
 export interface Env {
   ASSETS: Fetcher;
-  CALL_ROOM: DurableObjectNamespace<CallRoom>;
+  CALL_ROOM: DurableObjectNamespace;
   DB: D1Database;
   JWT_SECRET: string;
 }
 
-// Durable Object クラス型（後で定義）
-export class CallRoom extends DurableObject {
-  constructor(ctx: DurableObjectState, env: Env) {
-    super(ctx, env);
+// Hono の Context 型拡張
+declare module 'hono' {
+  interface ContextVariableMap {
+    userId: number;
   }
 }

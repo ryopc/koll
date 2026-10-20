@@ -3,7 +3,7 @@ import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import type { Env, AuthResponse, User } from '../types';
 
-const auth = new Hono<{ Bindings: Env }>();
+const auth = new Hono<{ Bindings: Env; Variables: { userId: number } }>();
 
 // JWT 秘密鍵を取得（環境変数から、または開発用デフォルト）
 function getJwtSecret(env: Env): Uint8Array {
@@ -49,7 +49,7 @@ async function generatePhoneNumber(db: D1Database): Promise<{ phoneNumber: strin
 }
 
 // 認証ミドルウェア
-export async function authMiddleware(c: any, next: any) {
+export async function authMiddleware(c: import('hono').Context<{ Bindings: Env; Variables: { userId: number } }>, next: () => Promise<void>) {
   const authHeader = c.req.header('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     return c.json({ success: false, error: 'Unauthorized' }, 401);

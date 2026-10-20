@@ -1,6 +1,6 @@
 // WebSocket シグナリングクライアント
 
-import type { SignalMessage } from '../worker/types';
+import type { SignalMessage } from './types';
 
 type SignalingEventMap = {
   open: void;

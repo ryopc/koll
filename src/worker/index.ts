@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { CallRoom } from './durable-objects/CallRoom';
 import auth from './api/auth';
 import type { Env } from './types';
 
@@ -53,3 +54,4 @@ app.all('*', async (c, next) => {
 });
 
 export default app;
+export { CallRoom };

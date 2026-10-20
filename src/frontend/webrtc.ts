@@ -205,12 +205,12 @@ export class WebRTCManager {
     if (!this.remoteStream) return;
     
     try {
-      // @ts-expect-error - setSinkId は実験的
-      if ('setSinkId' in HTMLAudioElement.prototype) {
-        const audio = new Audio();
-        audio.srcObject = this.remoteStream;
-        // @ts-expect-error
-        await audio.setSinkId(enabled ? 'speaker' : 'default');
+      const audio = new Audio();
+      audio.srcObject = this.remoteStream;
+      // setSinkId は実験的API
+      if ('setSinkId' in audio) {
+        // @ts-ignore - setSinkId は標準化されていない
+        await (audio as HTMLAudioElement & { setSinkId: (id: string) => Promise<void> }).setSinkId(enabled ? 'speaker' : 'default');
       }
     } catch (e) {
       console.warn('[WebRTC] Speaker toggle not supported:', e);

@@ -18,6 +18,19 @@ export interface AuthResult {
 
 const API_BASE = '/api/auth';
 
+function isAuthResult(data: unknown): data is AuthResult {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'success' in data &&
+    typeof (data as Record<string, unknown>).success === 'boolean'
+  );
+}
+
+function hasUser(data: unknown): data is AuthResult & { user: UserInfo; token: string } {
+  return isAuthResult(data) && data.success && !!data.user && typeof data.token === 'string';
+}
+
 /**
  * 認証トークンを取得
  */
@@ -83,13 +96,13 @@ export async function register(username: string, password: string): Promise<Auth
       body: JSON.stringify({ username, password }),
     });
     
-    const data = await response.json();
+    const data: unknown = await response.json();
     
-    if (data.success && data.token && data.user) {
+    if (hasUser(data)) {
       setAuth(data.token, data.user);
     }
     
-    return data;
+    return isAuthResult(data) ? data : { success: false, error: '不明なエラー' };
   } catch (e) {
     console.error('Register error:', e);
     return { success: false, error: 'ネットワークエラーが発生しました' };
@@ -107,13 +120,13 @@ export async function login(username: string, password: string): Promise<AuthRes
       body: JSON.stringify({ username, password }),
     });
     
-    const data = await response.json();
+    const data: unknown = await response.json();
     
-    if (data.success && data.token && data.user) {
+    if (hasUser(data)) {
       setAuth(data.token, data.user);
     }
     
-    return data;
+    return isAuthResult(data) ? data : { success: false, error: '不明なエラー' };
   } catch (e) {
     console.error('Login error:', e);
     return { success: false, error: 'ネットワークエラーが発生しました' };
@@ -157,8 +170,8 @@ export async function fetchMe(): Promise<UserInfo | null> {
       return null;
     }
     
-    const data = await response.json();
-    if (data.success && data.user) {
+    const data: unknown = await response.json();
+    if (hasUser(data)) {
       // ローカルストレージも更新
       localStorage.setItem(USER_KEY, JSON.stringify(data.user));
       return data.user;
