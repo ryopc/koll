@@ -934,8 +934,27 @@ function setupEventListeners(): void {
   // Keyboard support for dial input
   document.addEventListener('keydown', (e) => {
     if (currentState !== 'idle') return;
-    if (e.target === els.dialInput) return;
     
+    const isDialInputFocused = e.target === els.dialInput;
+    
+    // ダイヤル入力欄にフォーカスがある場合は通常のキーボード入力を許可（アルファベット含む）
+    if (isDialInputFocused) {
+      // バックスペース、エンター、エスケープのみ制御用として処理
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        handleBackspace();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        makeCall();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        handleClear();
+      }
+      // その他のキー（アルファベット等）はブラウザのデフォルト動作（入力）に任せる
+      return;
+    }
+    
+    // フォーカスがない場合は従来通りテンキー操作
     if (e.key >= '0' && e.key <= '9') {
       handleDialInput(e.key);
     } else if (e.key === '*' || e.key === '#') {
