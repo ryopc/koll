@@ -2,39 +2,41 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#F2F2F7">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Koll Phone">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
-  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512x512.png">
-  <title>Koll Phone</title>
+  <meta name="apple-mobile-web-app-title" content="Koll">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png">
+  <title>Koll</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="app">
-    <!-- 認証画面 -->
+
+    <!-- ========== 認証画面 ========== -->
     <div id="auth-screen" class="screen active" role="main">
       <div class="auth-container">
-        <div class="logo">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"></path>
           </svg>
         </div>
-        <h1>Koll Phone</h1>
+        <h1>Koll</h1>
         <p class="subtitle">PWA 電話アプリ</p>
-        
+
         <div id="auth-forms">
           <!-- ログインフォーム -->
           <form id="login-form" class="auth-form">
             <h2>ログイン</h2>
             <div class="form-group">
               <label for="login-username">ユーザー名</label>
-              <input type="text" id="login-username" name="username" required autocomplete="username" placeholder="ユーザー名">
+              <input type="text" id="login-username" name="username" required autocomplete="username" placeholder="ユーザー名" inputmode="text">
             </div>
             <div class="form-group">
               <label for="login-password">パスワード</label>
@@ -49,7 +51,7 @@
             <h2>新規登録</h2>
             <div class="form-group">
               <label for="register-username">ユーザー名</label>
-              <input type="text" id="register-username" name="username" required minlength="3" maxlength="20" autocomplete="username" placeholder="ユーザー名（3-20文字）">
+              <input type="text" id="register-username" name="username" required minlength="3" maxlength="20" autocomplete="username" placeholder="ユーザー名（3-20文字）" inputmode="text">
             </div>
             <div class="form-group">
               <label for="register-password">パスワード</label>
@@ -69,242 +71,284 @@
       </div>
     </div>
 
-    <!-- メイン電話画面 -->
+    <!-- ========== メイン電話画面 ========== -->
     <div id="phone-screen" class="screen hidden" role="main">
-      <!-- ヘッダー：自分の電話番号表示 -->
-      <header class="phone-header">
-        <div class="my-number">
-          <span class="label">あなたの番号</span>
-          <span id="my-phone-number" class="phone-number">---</span>
-        </div>
-        <button id="logout-btn" class="btn btn-ghost btn-sm" aria-label="ログアウト">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
-        </button>
-      </header>
 
-      <!-- タブナビゲーション -->
-      <nav class="tab-nav" role="tablist">
-        <button id="tab-dial" class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-dial">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-          </svg>
-          <span>ダイヤル</span>
-        </button>
-        <button id="tab-contacts" class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-contacts">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
-          <span>連絡先</span>
-        </button>
-        <button id="tab-history" class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-history">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-          </svg>
-          <span>履歴</span>
-        </button>
-        <button id="tab-settings" class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-settings">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-          <span>設定</span>
-        </button>
-      </nav>
+      <!-- ナビゲーションバー -->
+      <header class="phone-nav-bar">
+        <span class="nav-brand">Koll</span>
+        <div class="nav-right">
+          <span id="my-phone-number" class="nav-number">---</span>
+          <button id="logout-btn" class="icon-btn" type="button" aria-label="ログアウト">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 4H6.5A1.5 1.5 0 0 0 5 5.5v13A1.5 1.5 0 0 0 6.5 20H14"></path>
+              <path d="M16 8.5 19.5 12 16 15.5M19.5 12H10"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
 
       <!-- タブパネル -->
       <div class="tab-panels">
-        <!-- ダイヤルパネル -->
-        <div id="panel-dial" class="tab-panel active" role="tabpanel" aria-labelledby="tab-dial">
-          <div class="dial-display">
-            <input type="text" id="dial-input" placeholder="番号を入力 (例: pha-1234-5678)" aria-label="電話番号入力" inputmode="text" autocomplete="off">
-          </div>
-          <div class="dial-pad" role="grid" aria-label="ダイヤルパッド">
-            <button class="dial-key" data-digit="1"><span class="digit">1</span></button>
-            <button class="dial-key" data-digit="2"><span class="digit">2</span><span class="letters">ABC</span></button>
-            <button class="dial-key" data-digit="3"><span class="digit">3</span><span class="letters">DEF</span></button>
-            <button class="dial-key" data-digit="4"><span class="digit">4</span><span class="letters">GHI</span></button>
-            <button class="dial-key" data-digit="5"><span class="digit">5</span><span class="letters">JKL</span></button>
-            <button class="dial-key" data-digit="6"><span class="digit">6</span><span class="letters">MNO</span></button>
-            <button class="dial-key" data-digit="7"><span class="digit">7</span><span class="letters">PQRS</span></button>
-            <button class="dial-key" data-digit="8"><span class="digit">8</span><span class="letters">TUV</span></button>
-            <button class="dial-key" data-digit="9"><span class="digit">9</span><span class="letters">WXYZ</span></button>
-            <button class="dial-key" data-digit="*"><span class="digit">*</span></button>
-            <button class="dial-key" data-digit="0"><span class="digit">0</span><span class="letters">+</span></button>
-            <button class="dial-key" data-digit="#"><span class="digit">#</span></button>
-          </div>
-          <div class="dial-actions">
-            <button id="backspace-btn" class="btn btn-ghost btn-lg" aria-label="削除">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
-                <line x1="18" y1="9" x2="12" y2="15"></line>
-                <line x1="12" y1="9" x2="18" y2="15"></line>
-              </svg>
-            </button>
-            <button id="call-btn" class="btn btn-call btn-lg" aria-label="発信">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-              </svg>
-            </button>
-            <button id="clear-btn" class="btn btn-ghost btn-lg" aria-label="クリア">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-        </div>
 
-        <!-- 連絡先パネル -->
-        <div id="panel-contacts" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-contacts">
-          <div class="contacts-header">
-            <div class="contacts-search">
-              <input type="search" id="contacts-search" placeholder="連絡先を検索..." aria-label="連絡先検索">
+        <!-- ===== ダイヤル ===== -->
+        <section id="panel-dial" class="tab-panel active" role="tabpanel" aria-labelledby="tab-dial">
+          <div class="dial-panel">
+            <!-- 番号表示エリア -->
+            <div class="dial-display-row">
+              <button id="clear-btn" class="dial-display-btn" type="button" aria-label="クリア">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+                  <path d="M6 6l12 12M18 6 6 18"></path>
+                </svg>
+              </button>
+              <input type="text" id="dial-input" class="dial-input" placeholder="番号を入力" aria-label="電話番号入力" inputmode="text" autocomplete="off">
+              <button id="backspace-btn" class="dial-display-btn" type="button" aria-label="削除">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9L2.5 12z"></path>
+                  <path d="m11.8 9.8 4.4 4.4M16.2 9.8l-4.4 4.4"></path>
+                </svg>
+              </button>
             </div>
-            <button id="add-contact-btn" class="btn btn-primary btn-sm" aria-label="連絡先追加">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
+
+            <!-- ダイヤルパッド -->
+            <div class="dial-pad" id="dial-pad" role="grid" aria-label="ダイヤルパッド">
+              <button class="dial-key" data-digit="1" type="button"><span class="digit">1</span><span class="letters"></span></button>
+              <button class="dial-key" data-digit="2" type="button"><span class="digit">2</span><span class="letters">ABC</span></button>
+              <button class="dial-key" data-digit="3" type="button"><span class="digit">3</span><span class="letters">DEF</span></button>
+              <button class="dial-key" data-digit="4" type="button"><span class="digit">4</span><span class="letters">GHI</span></button>
+              <button class="dial-key" data-digit="5" type="button"><span class="digit">5</span><span class="letters">JKL</span></button>
+              <button class="dial-key" data-digit="6" type="button"><span class="digit">6</span><span class="letters">MNO</span></button>
+              <button class="dial-key" data-digit="7" type="button"><span class="digit">7</span><span class="letters">PQRS</span></button>
+              <button class="dial-key" data-digit="8" type="button"><span class="digit">8</span><span class="letters">TUV</span></button>
+              <button class="dial-key" data-digit="9" type="button"><span class="digit">9</span><span class="letters">WXYZ</span></button>
+              <button class="dial-key" data-digit="*" type="button"><span class="digit">∗</span><span class="letters"></span></button>
+              <button class="dial-key" data-digit="0" type="button"><span class="digit">0</span><span class="letters">+</span></button>
+              <button class="dial-key" data-digit="#" type="button"><span class="digit">#</span><span class="letters"></span></button>
+            </div>
+
+            <!-- 発信ボタン -->
+            <div class="dial-call-row">
+              <button id="call-btn" class="call-btn" type="button" aria-label="発信">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== 履歴 ===== -->
+        <section id="panel-history" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-history">
+          <div class="panel-header">
+            <h1 class="large-title">履歴</h1>
+          </div>
+          <div id="history-list" class="history-list">
+            <p class="empty-state">通話履歴がありません</p>
+          </div>
+        </section>
+
+        <!-- ===== 連絡先 ===== -->
+        <section id="panel-contacts" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-contacts">
+          <div class="panel-header">
+            <h1 class="large-title">連絡先</h1>
+            <button id="add-contact-btn" class="add-btn" type="button" aria-label="連絡先を追加">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M12 5v14M5 12h14"></path>
               </svg>
-              <span>追加</span>
             </button>
+          </div>
+          <div class="search-bar">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="11" cy="11" r="6.5"></circle>
+              <path d="m16 16 4.5 4.5"></path>
+            </svg>
+            <input type="search" id="contacts-search" placeholder="検索" aria-label="連絡先を検索" inputmode="text" autocomplete="off">
           </div>
           <div id="contacts-list" class="contacts-list">
             <p class="empty-state">連絡先がありません</p>
           </div>
-        </div>
+        </section>
 
-        <!-- 履歴パネル -->
-        <div id="panel-history" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-history">
-          <div id="history-list" class="history-list">
-            <p class="empty-state">通話履歴がありません</p>
+        <!-- ===== 設定 ===== -->
+        <section id="panel-settings" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-settings">
+          <div class="panel-header">
+            <h1 class="large-title">設定</h1>
           </div>
-        </div>
-
-        <!-- 設定パネル -->
-        <div id="panel-settings" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-settings">
-          <div class="settings-list">
-            <div class="setting-item">
-              <div class="setting-info">
-                <h3>マイクアクセス</h3>
-                <p>通話にはマイクの許可が必要です</p>
+          <div class="settings-group">
+            <div class="settings-card">
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h3>マイクアクセス</h3>
+                  <p>通話にはマイクの許可が必要です</p>
+                </div>
+                <button id="mic-permission-btn" class="btn-shell" type="button">権限を確認</button>
               </div>
-              <button id="mic-permission-btn" class="btn btn-secondary btn-sm">権限を確認</button>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h3>PWA インストール</h3>
+                  <p>ホーム画面に追加してアプリのように使えます</p>
+                </div>
+                <button id="install-btn" class="btn-shell hidden" type="button">インストール</button>
+              </div>
             </div>
-            <div class="setting-item">
-              <div class="setting-info">
-                <h3>PWA インストール</h3>
-                <p>ホーム画面に追加してアプリのように使えます</p>
+            <div class="settings-card">
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h3>ログアウト</h3>
+                  <p>アカウントからログアウトします</p>
+                </div>
+                <button id="logout-btn-2" class="btn-destructive" type="button">ログアウト</button>
               </div>
-              <button id="install-btn" class="btn btn-secondary btn-sm hidden">インストール</button>
-            </div>
-            <div class="setting-item danger">
-              <div class="setting-info">
-                <h3>ログアウト</h3>
-                <p>アカウントからログアウトします</p>
-              </div>
-              <button id="logout-btn-2" class="btn btn-danger btn-sm">ログアウト</button>
             </div>
           </div>
-        </div>
+        </section>
       </div>
+
+      <!-- タブバー -->
+      <nav class="tab-bar" role="tablist" aria-label="メインナビゲーション">
+        <button id="tab-dial" class="tab-btn active" type="button" role="tab" aria-selected="true" aria-controls="panel-dial">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="6" cy="6" r="1.7"></circle><circle cx="12" cy="6" r="1.7"></circle><circle cx="18" cy="6" r="1.7"></circle>
+            <circle cx="6" cy="12" r="1.7"></circle><circle cx="12" cy="12" r="1.7"></circle><circle cx="18" cy="12" r="1.7"></circle>
+            <circle cx="6" cy="18" r="1.7"></circle><circle cx="12" cy="18" r="1.7"></circle><circle cx="18" cy="18" r="1.7"></circle>
+          </svg>
+          <span class="tab-label">ダイヤル</span>
+        </button>
+        <button id="tab-history" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="panel-history">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 7v5.2l3.4 2"></path>
+          </svg>
+          <span class="tab-label">履歴</span>
+        </button>
+        <button id="tab-contacts" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="panel-contacts">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="3.6"></circle>
+            <path d="M4.8 20c0-3.6 3.2-6 7.2-6s7.2 2.4 7.2 6"></path>
+          </svg>
+          <span class="tab-label">連絡先</span>
+        </button>
+        <button id="tab-settings" class="tab-btn" type="button" role="tab" aria-selected="false" aria-controls="panel-settings">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3.2"></circle>
+            <path d="M12 2.8v2.4M12 18.8v2.4M21.2 12h-2.4M5.2 12H2.8M18.5 5.5l-1.7 1.7M7.2 16.8l-1.7 1.7M18.5 18.5l-1.7-1.7M7.2 7.2 5.5 5.5"></path>
+          </svg>
+          <span class="tab-label">設定</span>
+        </button>
+      </nav>
     </div>
 
-    <!-- 着信モーダル -->
+    <!-- ========== 着信画面 ========== -->
     <div id="incoming-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="incoming-title">
-      <div class="modal-content incoming">
-        <h2 id="incoming-title">着信</h2>
-        <p class="caller-number" id="incoming-number">---</p>
-        <p class="caller-name" id="incoming-name"></p>
+      <div class="modal-content incoming-screen">
+        <div class="incoming-top">
+          <span id="incoming-title" class="incoming-label">着信</span>
+        </div>
+        <div class="incoming-identity">
+          <div class="caller-avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="8" r="4.2"></circle>
+              <path d="M12 13.5c-4.4 0-8 2.6-8 6.2 0 .9.7 1.6 1.6 1.6h12.8c.9 0 1.6-.7 1.6-1.6 0-3.6-3.6-6.2-8-6.2z"></path>
+            </svg>
+          </div>
+          <p id="incoming-name" class="caller-name"></p>
+          <p id="incoming-number" class="caller-number">---</p>
+        </div>
         <div class="incoming-actions">
-          <button id="decline-btn" class="btn btn-decline btn-lg" aria-label="拒否">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          <button id="decline-btn" class="round-btn decline" type="button" aria-label="拒否">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"></path>
             </svg>
+            <span>拒否</span>
           </button>
-          <button id="accept-btn" class="btn btn-accept btn-lg" aria-label="応答">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          <button id="accept-btn" class="round-btn accept" type="button" aria-label="応答">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"></path>
             </svg>
+            <span>応答</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- 通話中モーダル -->
+    <!-- ========== 通話中画面 ========== -->
     <div id="call-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="call-title">
-      <div class="modal-content call">
-        <h2 id="call-title">通話中</h2>
-        <p class="call-status" id="call-status">接続中...</p>
-        <p class="call-number" id="call-number">---</p>
-        <div class="call-timer" id="call-timer">00:00</div>
+      <div class="modal-content call-screen">
+        <div class="call-top">
+          <span id="call-status" class="call-status">接続中...</span>
+          <span id="call-title" class="visually-hidden">通話中</span>
+        </div>
+        <div class="call-identity">
+          <div class="caller-avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="8" r="4.2"></circle>
+              <path d="M12 13.5c-4.4 0-8 2.6-8 6.2 0 .9.7 1.6 1.6 1.6h12.8c.9 0 1.6-.7 1.6-1.6 0-3.6-3.6-6.2-8-6.2z"></path>
+            </svg>
+          </div>
+          <p id="call-number" class="call-number">---</p>
+        </div>
+        <div id="call-timer" class="call-timer">00:00</div>
         <div class="call-controls">
-          <button id="mute-btn" class="btn btn-control" aria-label="ミュート" aria-pressed="false">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-              <line x1="12" y1="19" x2="12" y2="23"></line>
-              <line x1="8" y1="23" x2="16" y2="23"></line>
+          <button id="mute-btn" class="call-control" type="button" aria-label="ミュート" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="2.5" width="6" height="11" rx="3"></rect>
+              <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"></path>
             </svg>
-            <span class="control-label">ミュート</span>
+            <span>ミュート</span>
           </button>
-          <button id="speaker-btn" class="btn btn-control" aria-label="スピーカー" aria-pressed="false">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <button id="hold-btn" class="call-control" type="button" aria-label="保留" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M10 9v6M14 9v6"></path>
             </svg>
-            <span class="control-label">スピーカー</span>
+            <span>保留</span>
           </button>
-          <button id="hold-btn" class="btn btn-control" aria-label="保留" aria-pressed="false">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-              <path d="M6 8h12M6 12h12M6 16h12"></path>
+          <button id="speaker-btn" class="call-control" type="button" aria-label="スピーカー" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 9.5h3l4.5-3.8v12.6L7 14.5H4z"></path>
+              <path d="M15.4 9.2a4.2 4.2 0 0 1 0 5.6M18 6.6a8 8 0 0 1 0 10.8"></path>
             </svg>
-            <span class="control-label">保留</span>
-          </button>
-          <button id="hangup-btn" class="btn btn-hangup btn-lg" aria-label="切断">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-            </svg>
+            <span>スピーカー</span>
           </button>
         </div>
+        <button id="hangup-btn" class="hangup-btn" type="button" aria-label="切断">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"></path>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <!-- トースト通知 -->
-    <div id="toast-container" class="toast-container" role="region" aria-live="polite"></div>
-
-    <!-- 連絡先追加/編集モーダル -->
+    <!-- ========== 連絡先追加/編集 ========== -->
     <div id="contact-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
-      <div class="modal-content">
-        <h2 id="contact-modal-title">連絡先を追加</h2>
-        <form id="contact-form">
+      <div class="modal-sheet">
+        <div class="sheet-grabber" aria-hidden="true"></div>
+        <div class="sheet-header">
+          <button id="contact-cancel-btn" class="sheet-action" type="button">キャンセル</button>
+          <h2 id="contact-modal-title">連絡先を追加</h2>
+          <span class="sheet-action-placeholder" aria-hidden="true"></span>
+        </div>
+        <form id="contact-form" class="contact-form">
           <input type="hidden" id="contact-id">
           <div class="form-group">
             <label for="contact-phone">電話番号</label>
-            <input type="tel" id="contact-phone" name="phone" required placeholder="phx-xxxx-xxxx" aria-describedby="phone-help">
-            <p id="phone-help" class="form-help">形式: pha-xxxx-xxxx (英小文字 + 8桁数字)</p>
+            <input type="tel" id="contact-phone" name="phone" required placeholder="pha-0000-0000" aria-describedby="phone-help" inputmode="text" autocomplete="off">
+            <p id="phone-help" class="form-help">形式: pha-0000-0000（英小文字1文字 + 数字8桁）</p>
           </div>
           <div class="form-group">
             <label for="contact-name">表示名（任意）</label>
-            <input type="text" id="contact-name" name="name" maxlength="30" placeholder="表示名">
+            <input type="text" id="contact-name" name="name" maxlength="30" placeholder="表示名" autocomplete="name">
           </div>
           <div class="form-group">
             <div id="contact-error" class="error-message hidden" role="alert"></div>
           </div>
-          <div class="modal-actions">
-            <button type="button" id="contact-cancel-btn" class="btn btn-ghost">キャンセル</button>
-            <button type="submit" class="btn btn-primary">保存</button>
-          </div>
+          <button type="submit" class="btn btn-primary btn-block">保存</button>
         </form>
       </div>
     </div>
+
+    <!-- ========== トースト ========== -->
+    <div id="toast-container" class="toast-container" role="region" aria-live="polite"></div>
   </div>
 
   <script type="module" src="main.ts"></script>

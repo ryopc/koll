@@ -140,6 +140,17 @@ Cloudflare Workers + Durable Objects + WebRTC を使用した、ブラウザベ�
 - [ ] フロントエンド: 起動時/通話前に TURN 認証情報取得、RTCConfiguration に動的設定
 - [ ] ICE 候補収集ログ・接続品質モニタリング
 
+### Phase 9: iOS Phone.app 風 UI 再設計
+- [ ] `src/frontend/index.html` / `src/frontend/style.css` 全面書き直し（iOS 17/18 Phone.app 準拠）
+  - 下部固定タブバー（ダイヤル / 履歴 / 連絡先 / 設定）、半透明 + backdrop-filter
+  - キーパッド: 円形キー（数字 34px + 英字 10px）、中央寄せ 40px の番号表示、緑の円形発信ボタン
+  - 通話中画面: フルスクリーン + blur 背景、円形コントロール 3 個、赤の円形切断ボタン
+  - 着信画面: 左赤（拒否）/ 右緑（応答）の円形ボタン
+  - 履歴・連絡先・設定: iOS のグループ化リスト調
+  - ライト / ダーク両対応（`prefers-color-scheme`）
+- [ ] DOM 契約の維持（`ui.ts` が参照する ID 46 個・クラス群・`@keyframes slideUp`）
+- [ ] ダイヤル入力はアルファベット可（`pha-` `phb-` `phc-` のため readonly 禁止）
+
 ---
 
 ## ファイル構成
@@ -178,7 +189,9 @@ koll/
 │       ├── contacts.ts      # 連絡先管理クライアント
 │       ├── turn.ts          # TURN 設定クライアント
 │       └── ui.ts            # UI 制御
-└── public/                  # 静的アセット（favicon、アイコン等）
+└── (src/frontend/public/)   # 静的アセット（favicon、アイコン等）
+                              # ※ Vite の root が src/frontend のため public は
+                              #   src/frontend/public に置くこと
 ```
 
 ---
