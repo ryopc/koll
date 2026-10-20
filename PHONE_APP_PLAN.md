@@ -150,6 +150,15 @@ Cloudflare Workers + Durable Objects + WebRTC を使用した、ブラウザベ�
   - ライト / ダーク両対応（`prefers-color-scheme`）
 - [ ] DOM 契約の維持（`ui.ts` が参照する ID 46 個・クラス群・`@keyframes slideUp`）
 - [ ] ダイヤル入力はアルファベット可（`pha-` `phb-` `phc-` のため readonly 禁止）
+- [ ] 縦横レスポンシブ対応（はみ出しゼロ）
+  - 横向き: ダイヤルを「左＝番号表示＋発信 / 右＝ダイヤルパッド」の2カラム化
+  - 縦: 3列×4行のダイヤル、番号表示40px、緑の円形発信ボタン
+  - 広い画面（≥900px）: アプリ幅を560pxに絞って中央配置
+  - 検証: 8ビューポート（縦/横 × SE〜iPad/デスクトップ）でオーバーフロー0
+- [ ] ロゴ刷新
+  - `src/frontend/public/icons/icon.svg` をマスターに、SVG → PNG を8サイズ自動生成（透明度保持・最適化済み）
+  - `any` / `maskable` / favicon / shortcut 用 PNG を個別生成
+  - 認証画面とナビゲーションバーで同じマークを使用
 
 ---
 

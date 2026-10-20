@@ -9,8 +9,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Koll">
   <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="/icons/favicon-64.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png">
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
   <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png">
   <title>Koll</title>
@@ -22,11 +25,7 @@
     <!-- ========== 認証画面 ========== -->
     <div id="auth-screen" class="screen active" role="main">
       <div class="auth-container">
-        <div class="logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"></path>
-          </svg>
-        </div>
+        <img class="logo" src="/icons/icon.svg" alt="Koll" width="88" height="88">
         <h1>Koll</h1>
         <p class="subtitle">PWA 電話アプリ</p>
 
@@ -76,7 +75,10 @@
 
       <!-- ナビゲーションバー -->
       <header class="phone-nav-bar">
-        <span class="nav-brand">Koll</span>
+        <span class="nav-brand-wrap">
+          <img class="nav-logo" src="/icons/icon.svg" alt="" width="24" height="24">
+          <span class="nav-brand">Koll</span>
+        </span>
         <div class="nav-right">
           <span id="my-phone-number" class="nav-number">---</span>
           <button id="logout-btn" class="icon-btn" type="button" aria-label="ログアウト">
