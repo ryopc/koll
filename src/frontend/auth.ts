@@ -31,6 +31,21 @@ function hasUser(data: unknown): data is AuthResult & { user: UserInfo; token: s
   return isAuthResult(data) && data.success && !!data.user && typeof data.token === 'string';
 }
 
+function hasMeUser(data: unknown): data is { success: true; user: UserInfo } {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'success' in data &&
+    (data as Record<string, unknown>).success === true &&
+    'user' in data &&
+    typeof (data as Record<string, unknown>).user === 'object' &&
+    (data as Record<string, unknown>).user !== null &&
+    'id' in (data as Record<string, unknown>).user &&
+    'username' in (data as Record<string, unknown>).user &&
+    'phone_number' in (data as Record<string, unknown>).user
+  );
+}
+
 /**
  * 認証トークンを取得
  */
@@ -171,7 +186,7 @@ export async function fetchMe(): Promise<UserInfo | null> {
     }
     
     const data: unknown = await response.json();
-    if (hasUser(data)) {
+    if (hasMeUser(data)) {
       // ローカルストレージも更新
       localStorage.setItem(USER_KEY, JSON.stringify(data.user));
       return data.user;
