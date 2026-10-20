@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "build:frontend": "vite build",
+    "build:frontend": "vite build && cp dist/manifest.webmanifest dist/manifest.json",
     "build": "npm run build:frontend && wrangler deploy --dry-run",
     "deploy": "npm run build:frontend && wrangler deploy",
     "typecheck": "tsc --noEmit",

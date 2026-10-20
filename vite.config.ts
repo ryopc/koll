@@ -17,6 +17,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
+        filename: 'manifest.json',
         name: 'Koll Phone',
         short_name: 'Koll',
         description: 'PWA電話アプリ - Cloudflare Workers + WebRTC',
