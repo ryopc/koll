@@ -36,7 +36,6 @@ export interface User {
   id: number;
   username: string;
   phone_number: string;
-  prefix_index: number;
   created_at: number;
   updated_at: number;
 }

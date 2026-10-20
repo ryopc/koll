@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { Env } from '../types';
+import { isValidPhoneNumber } from '../phoneNumber';
 
 const contacts = new Hono<{ Bindings: Env; Variables: { userId: number } }>();
 
@@ -69,8 +70,8 @@ contacts.post('/', authMiddleware, async (c) => {
   }
   
   // 形式検証
-  if (!/^ph[a-z]-\d{4}-\d{4}$/.test(contact_phone)) {
-    return c.json({ success: false, error: '電話番号の形式が正しくありません (phx-xxxx-xxxx)' }, 400);
+  if (!isValidPhoneNumber(contact_phone)) {
+    return c.json({ success: false, error: '電話番号の形式が正しくありません (091-xxxx-xxxx)' }, 400);
   }
   
   // 自分自身を登録防止

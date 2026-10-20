@@ -103,7 +103,7 @@
                   <path d="M6 6l12 12M18 6 6 18"></path>
                 </svg>
               </button>
-              <input type="text" id="dial-input" class="dial-input" placeholder="番号を入力" aria-label="電話番号入力" inputmode="text" autocomplete="off">
+              <input type="tel" id="dial-input" class="dial-input" placeholder="091-1234-5678" aria-label="電話番号入力" inputmode="numeric" maxlength="13" autocomplete="off">
               <button id="backspace-btn" class="dial-display-btn" type="button" aria-label="削除">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M9 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9L2.5 12z"></path>
@@ -334,8 +334,8 @@
           <input type="hidden" id="contact-id">
           <div class="form-group">
             <label for="contact-phone">電話番号</label>
-            <input type="tel" id="contact-phone" name="phone" required placeholder="pha-0000-0000" aria-describedby="phone-help" inputmode="text" autocomplete="off">
-            <p id="phone-help" class="form-help">形式: pha-0000-0000（英小文字1文字 + 数字8桁）</p>
+            <input type="tel" id="contact-phone" name="phone" required placeholder="091-1234-5678" aria-describedby="phone-help" inputmode="numeric" maxlength="13" autocomplete="off">
+            <p id="phone-help" class="form-help">形式: 091-1234-5678（数字11桁）</p>
           </div>
           <div class="form-group">
             <label for="contact-name">表示名（任意）</label>

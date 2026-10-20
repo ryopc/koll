@@ -3,8 +3,8 @@
 import { SignalingClient } from './signaling.js';
 import { WebRTCManager } from './webrtc.js';
 import { register, login, logout, fetchMe, isAuthenticated, getToken, clearAuth } from './auth.js';
-import { storePhoneNumber, getStoredPhoneNumber, clearPhoneNumber } from './phoneNumber.js';
-import { getContacts, addContact, updateContact, deleteContact, lookupContactName, formatContactPhone, validateContactPhone } from './contacts.js';
+import { storePhoneNumber, getStoredPhoneNumber, clearPhoneNumber, canonicalizePhone, isValidPhoneNumber, formatPhoneForDisplay } from './phoneNumber.js';
+import { getContacts, addContact, updateContact, deleteContact, lookupContactName, formatContactPhone } from './contacts.js';
 import { subscribeToPush, unsubscribeFromPush, requestNotificationPermission, isPushSupported } from './push.js';
 import { buildRTCConfiguration } from './turn.js';
 
@@ -187,10 +187,6 @@ function formatDuration(ms: number): string {
   return `${mins}:${(secs % 60).toString().padStart(2, '0')}`;
 }
 
-function formatPhoneForDisplay(phone: string): string {
-  return phone.replace(/^ph([a-z])-(\d{4})(\d{4})$/, 'ph$1-$2-$3');
-}
-
 function getContactDisplayName(phone: string): string {
   const contact = currentContacts.find(c => c.contact_phone === phone);
   return contact?.display_name || formatPhoneForDisplay(phone);
@@ -369,7 +365,7 @@ async function initAfterAuth(): Promise<void> {
   }
   
   // 電話番号保存
-  storePhoneNumber({ phoneNumber: user.phone_number, prefixIndex: 0 });
+  storePhoneNumber(user.phone_number);
   
   // 自分の番号表示
   els.myPhoneNumber.textContent = formatPhoneForDisplay(user.phone_number);
@@ -529,14 +525,19 @@ async function handleIceCandidate(message: any): Promise<void> {
 
 // 発信処理
 async function makeCall(): Promise<void> {
-  const number = els.dialInput.value.trim();
+  const number = canonicalizePhone(els.dialInput.value);
   if (!number) {
     showToast('番号を入力してください', 'warning');
     return;
   }
-  
+
+  if (!isValidPhoneNumber(number)) {
+    showToast('番号の形式が正しくありません (091-xxxx-xxxx)', 'warning');
+    return;
+  }
+
   // 自分の番号への発信防止
-  const myNumber = getStoredPhoneNumber()?.phoneNumber;
+  const myNumber = getStoredPhoneNumber();
   if (myNumber && number === myNumber) {
     showToast('自分の番号にはかけられません', 'warning');
     return;
@@ -667,15 +668,12 @@ async function handleLogout(): Promise<void> {
 // ダイヤル入力処理
 function handleDialInput(digit: string): void {
   if (currentState !== 'idle') return;
-  const current = els.dialInput.value;
-  if (current.length < 20) {
-    els.dialInput.value = current + digit;
-  }
+  els.dialInput.value = canonicalizePhone(els.dialInput.value + digit);
 }
 
 function handleBackspace(): void {
   if (currentState !== 'idle') return;
-  els.dialInput.value = els.dialInput.value.slice(0, -1);
+  els.dialInput.value = canonicalizePhone(els.dialInput.value.slice(0, -1));
 }
 
 function handleClear(): void {
@@ -697,7 +695,7 @@ function renderContacts(): void {
   
   els.contactsList.innerHTML = currentContacts.map(contact => `
     <div class="contact-item" data-id="${contact.id}" data-phone="${contact.contact_phone}">
-      <div class="contact-avatar">${contact.display_name?.[0]?.toUpperCase() || contact.contact_phone.slice(3, 4).toUpperCase()}</div>
+      <div class="contact-avatar">${contact.display_name?.[0]?.toUpperCase() || contact.contact_phone.slice(4, 5).toUpperCase()}</div>
       <div class="contact-info">
         <div class="contact-name">${contact.display_name || formatContactPhone(contact.contact_phone)}</div>
         <div class="contact-phone">${formatContactPhone(contact.contact_phone)}</div>
@@ -729,7 +727,7 @@ function renderContacts(): void {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const phone = (e.currentTarget as HTMLElement).dataset.phone!;
-      els.dialInput.value = phone;
+      els.dialInput.value = canonicalizePhone(phone);
       makeCall();
     });
   });
@@ -795,11 +793,11 @@ function openContactModal(id?: number): void {
 async function handleContactSubmit(e: SubmitEvent): Promise<void> {
   e.preventDefault();
   
-  const phone = els.contactPhone.value.trim();
+  const phone = canonicalizePhone(els.contactPhone.value);
   const name = els.contactName.value.trim() || null;
   
-  if (!validateContactPhone(phone)) {
-    showContactError('電話番号の形式が正しくありません (phx-xxxx-xxxx)');
+  if (!isValidPhoneNumber(phone)) {
+    showContactError('電話番号の形式が正しくありません (091-xxxx-xxxx)');
     return;
   }
   
@@ -910,6 +908,16 @@ function setupEventListeners(): void {
   els.backspaceBtn.addEventListener('click', handleBackspace);
   els.clearBtn.addEventListener('click', handleClear);
   els.callBtn.addEventListener('click', makeCall);
+
+  // ダイヤル入力欄：数字のみ許可し 3-4-4 に自動整形
+  els.dialInput.addEventListener('input', () => {
+    const formatted = canonicalizePhone(els.dialInput.value);
+    if (formatted !== els.dialInput.value) els.dialInput.value = formatted;
+  });
+  els.contactPhone.addEventListener('input', () => {
+    const formatted = canonicalizePhone(els.contactPhone.value);
+    if (formatted !== els.contactPhone.value) els.contactPhone.value = formatted;
+  });
   
   // Contacts
   els.contactsSearch.addEventListener('input', handleContactsSearch);
@@ -937,7 +945,7 @@ function setupEventListeners(): void {
     
     const isDialInputFocused = e.target === els.dialInput;
     
-    // ダイヤル入力欄にフォーカスがある場合は通常のキーボード入力を許可（アルファベット含む）
+    // ダイヤル入力欄にフォーカスがある場合は通常のキーボード入力を許可（数字のみ）
     if (isDialInputFocused) {
       // バックスペース、エンター、エスケープのみ制御用として処理
       if (e.key === 'Backspace') {
@@ -950,7 +958,7 @@ function setupEventListeners(): void {
         e.preventDefault();
         handleClear();
       }
-      // その他のキー（アルファベット等）はブラウザのデフォルト動作（入力）に任せる
+      // その他のキーはブラウザのデフォルト動作（入力）に任せ、input イベントで数字だけに整形する
       return;
     }
     

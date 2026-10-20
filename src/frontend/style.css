@@ -1257,3 +1257,34 @@ img, svg { max-width: 100%; }
   .tab-panel { padding-bottom: 8px; }
 }
 
+/* =========================================================
+   ダイヤル入力欄：番号全体が必ず収まるよう文字サイズを実幅に追従
+   （091-6781-7493 = 11桁 + ハイフン2つ）
+   ========================================================= */
+.dial-display-row {
+  container-type: inline-size;
+}
+
+.dial-input {
+  /* 番号幅 ≈ 文字サイズ × 6.95。入力欄幅 = 行幅 - ボタン2個 - ギャップ */
+  font-size: 40px;
+  font-size: min(40px, calc((100cqw - 92px) / 7.2));
+}
+
+.dial-input::placeholder {
+  font-size: 28px;
+  font-size: min(28px, 0.7em);
+}
+
+@media (orientation: landscape) {
+  .dial-input {
+    font-size: 30px;
+    font-size: min(30px, calc((100cqw - 80px) / 7.2));
+  }
+
+  .dial-input::placeholder {
+    font-size: 22px;
+    font-size: min(22px, 0.72em);
+  }
+}
+

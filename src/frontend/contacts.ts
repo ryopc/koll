@@ -1,5 +1,7 @@
 // 連絡先管理クライアント
 
+import { formatPhoneForDisplay, isValidPhoneNumber } from './phoneNumber.js';
+
 const API_BASE = '/api/contacts';
 
 export interface Contact {
@@ -138,17 +140,17 @@ export async function deleteContact(id: number): Promise<boolean> {
 }
 
 /**
- * 電話番号形式検証
+ * 電話番号形式検証（091-XXXX-XXXX）
  */
 export function validateContactPhone(phone: string): boolean {
-  return /^ph[a-z]-\d{4}-\d{4}$/.test(phone);
+  return isValidPhoneNumber(phone);
 }
 
 /**
  * 表示用電話番号フォーマット
  */
 export function formatContactPhone(phone: string): string {
-  return phone.replace(/^ph([a-z])-(\d{4})(\d{4})$/, 'ph$1-$2-$3');
+  return formatPhoneForDisplay(phone);
 }
 
 /**

@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import type { Env, AuthResponse, User } from '../types';
+import { generateRandomPhoneNumber } from '../phoneNumber';
 
 const auth = new Hono<{ Bindings: Env; Variables: { userId: number } }>();
 
@@ -30,22 +31,15 @@ async function verifyToken(token: string, env: Env): Promise<{ userId: number } 
   }
 }
 
-// 電話番号生成（プレフィックス循環）
-async function generatePhoneNumber(db: D1Database): Promise<{ phoneNumber: string; prefixIndex: number }> {
-  // 現在の最大 prefix_index を取得
-  const result = await db.prepare('SELECT COALESCE(MAX(prefix_index), -1) as maxIdx FROM users').first<{ maxIdx: number }>();
-  const nextPrefixIndex = ((result?.maxIdx ?? -1) + 1) % 26;
-  const prefix = 'abcdefghijklmnopqrstuvwxyz'[nextPrefixIndex];
-  
-  // そのプレフィックスでの最大番号を取得
-  const maxNumResult = await db.prepare(
-    `SELECT MAX(CAST(SUBSTR(phone_number, 5) AS INTEGER)) as maxNum FROM users WHERE phone_number LIKE ?`
-  ).bind(`${prefix}-%`).first<{ maxNum: number | null }>();
-  
-  const nextNum = ((maxNumResult?.maxNum ?? 0) + 1).toString().padStart(8, '0');
-  const formatted = `${nextNum.slice(0, 4)}-${nextNum.slice(4)}`;
-  
-  return { phoneNumber: `ph${prefix}-${formatted}`, prefixIndex: nextPrefixIndex };
+// 電話番号生成（091-XXXX-XXXX のランダム形式）
+// 衝突確率は 1/100000000 未満だが、DB の UNIQUE 制約に引っかからないよう再試行する
+async function generatePhoneNumber(db: D1Database): Promise<string> {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const phoneNumber = generateRandomPhoneNumber();
+    const existing = await db.prepare('SELECT 1 FROM users WHERE phone_number = ?').bind(phoneNumber).first();
+    if (!existing) return phoneNumber;
+  }
+  throw new Error('Failed to generate a unique phone number');
 }
 
 // 認証ミドルウェア
@@ -89,13 +83,13 @@ auth.post('/register', async (c) => {
     // パスワードハッシュ化
     const passwordHash = await bcrypt.hash(password, 12);
     
-    // 電話番号生成
-    const { phoneNumber, prefixIndex } = await generatePhoneNumber(c.env.DB);
+    // 電話番号生成（ランダム）
+    const phoneNumber = await generatePhoneNumber(c.env.DB);
     
-    // ユーザー作成
+    // ユーザー作成（prefix_index は旧スキーマ互換のため 0 のまま）
     const result = await c.env.DB.prepare(
-      'INSERT INTO users (username, password_hash, phone_number, prefix_index) VALUES (?, ?, ?, ?)'
-    ).bind(username, passwordHash, phoneNumber, prefixIndex).run();
+      'INSERT INTO users (username, password_hash, phone_number, prefix_index) VALUES (?, ?, ?, 0)'
+    ).bind(username, passwordHash, phoneNumber).run();
     
     const userId = result.meta.last_row_id;
     

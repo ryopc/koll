@@ -150,6 +150,13 @@ Cloudflare Workers + Durable Objects + WebRTC を使用した、ブラウザベ�
   - ライト / ダーク両対応（`prefers-color-scheme`）
 - [ ] DOM 契約の維持（`ui.ts` が参照する ID 46 個・クラス群・`@keyframes slideUp`）
 - [ ] ダイヤル入力はアルファベット可（`pha-` `phb-` `phc-` のため readonly 禁止）
+  - ※ Phase 10 で番号形式を全面変更（`091-XXXX-XXXX`）したため、数字のみ・自動整形に変更
+- [ ] 電話番号形式: `091-XXXX-XXXX`（先頭3桁固定 + 残り8桁完全ランダム）
+  - サーバー側で `crypto.getRandomValues` による乱数生成（UNIQUE 制約の衝突は再試行で回避）
+  - 正規形（ハイフン区切り）を DB / シグナリング / 連絡先で共通利用
+  - 入力欄は入力途中の数字を自動で 3-4-4 に整形（英字は除去）
+  - 番号全体が常に収まるよう `cqw` で文字サイズが実幅に追従
+  - 移行用 SQL: `migrations/0004_migrate_phone_numbers.sql`（既存IDへランダム再割当）
 - [ ] 縦横レスポンシブ対応（はみ出しゼロ）
   - 横向き: ダイヤルを「左＝番号表示＋発信 / 右＝ダイヤルパッド」の2カラム化
   - 縦: 3列×4行のダイヤル、番号表示40px、緑の円形発信ボタン

@@ -1,29 +1,25 @@
-// 電話番号管理モジュール
+// 電話番号管理モジュール（フロントエンド）
+//
+// 形式: 091-XXXX-XXXX
+//  - 先頭 3 桁は固定の 091
+//  - 残り 8 桁はランダム（サーバー側で発行）
+//  - ハイフン区切りの「正規形」を DB / シグナリング / 連絡先で共有する
 
 const PHONE_NUMBER_KEY = 'koll_phone_number';
-const PHONE_PREFIX_KEY = 'koll_phone_prefix_index';
 
-export interface PhoneNumberInfo {
-  phoneNumber: string;
-  prefixIndex: number;
-}
+/** 電話番号の正規パターン */
+export const PHONE_NUMBER_PATTERN = /^091-\d{4}-\d{4}$/;
+
+/** 番号の最大桁数（先頭3 + ランダム8） */
+const MAX_DIGITS = 11;
 
 /**
  * ローカルストレージから電話番号を取得
  * なければ null を返す（サーバーから取得する必要あり）
  */
-export function getStoredPhoneNumber(): PhoneNumberInfo | null {
+export function getStoredPhoneNumber(): string | null {
   try {
-    const phoneNumber = localStorage.getItem(PHONE_NUMBER_KEY);
-    const prefixIndex = localStorage.getItem(PHONE_PREFIX_KEY);
-    
-    if (phoneNumber && prefixIndex !== null) {
-      return {
-        phoneNumber,
-        prefixIndex: parseInt(prefixIndex, 10),
-      };
-    }
-    return null;
+    return localStorage.getItem(PHONE_NUMBER_KEY);
   } catch {
     return null;
   }
@@ -32,10 +28,9 @@ export function getStoredPhoneNumber(): PhoneNumberInfo | null {
 /**
  * 電話番号をローカルストレージに保存
  */
-export function storePhoneNumber(info: PhoneNumberInfo): void {
+export function storePhoneNumber(phoneNumber: string): void {
   try {
-    localStorage.setItem(PHONE_NUMBER_KEY, info.phoneNumber);
-    localStorage.setItem(PHONE_PREFIX_KEY, info.prefixIndex.toString());
+    localStorage.setItem(PHONE_NUMBER_KEY, phoneNumber);
   } catch (e) {
     console.error('Failed to store phone number:', e);
   }
@@ -47,57 +42,49 @@ export function storePhoneNumber(info: PhoneNumberInfo): void {
 export function clearPhoneNumber(): void {
   try {
     localStorage.removeItem(PHONE_NUMBER_KEY);
-    localStorage.removeItem(PHONE_PREFIX_KEY);
   } catch (e) {
     console.error('Failed to clear phone number:', e);
   }
 }
 
 /**
- * 電話番号フォーマット検証
- * 形式: ph{a-z}-xxxx-xxxx
+ * 数字のみを取り出す
  */
-export function validatePhoneNumber(phone: string): boolean {
-  return /^ph[a-z]-\d{4}-\d{4}$/.test(phone);
+export function digitsOnly(input: string): string {
+  return input.replace(/\D/g, '');
 }
 
 /**
- * 電話番号を整形（入力補助用）
- * 数字のみを受け取って phx-xxxx-xxxx 形式にする
+ * 3-4-4 のグループに整形する（入力途中でも使える）
+ * 例: '09167817493' → '091-6781-7493'、'0916781' → '091-6781'
  */
-export function formatPhoneNumber(input: string): string {
-  const digits = input.replace(/\D/g, '');
-  if (digits.length === 0) return '';
-  
-  // プレフィックス判定（最初の1桁で ph{a-z} を決める簡易版）
-  // 実際はサーバーから取得した番号を使う
-  const prefix = 'a'; // デフォルト
-  const numPart = digits.padStart(8, '0').slice(0, 8);
-  return `ph${prefix}-${numPart.slice(0, 4)}-${numPart.slice(4)}`;
+export function canonicalizePhone(input: string): string {
+  const digits = digitsOnly(input ?? '').slice(0, MAX_DIGITS);
+  if (!digits) return '';
+
+  return [
+    digits.slice(0, 3),
+    digits.slice(3, 7),
+    digits.slice(7, 11),
+  ]
+    .filter((group) => group.length > 0)
+    .join('-');
 }
 
 /**
- * 表示用フォーマット（スペース区切りなど）
+ * 妥当な電話番号か（091-XXXX-XXXX の完全形）
  */
-export function formatForDisplay(phone: string): string {
-  return phone; // そのまま表示
+export function isValidPhoneNumber(phone: string): boolean {
+  return PHONE_NUMBER_PATTERN.test(phone);
 }
 
 /**
- * プレフィックスからインデックスを取得
+ * 表示用フォーマット
+ * 正規形はそのまま、旧形式（英字を含む）は触らない
  */
-export function prefixToIndex(prefix: string): number {
-  const char = prefix.toLowerCase().charAt(0);
-  if (char >= 'a' && char <= 'z') {
-    return char.charCodeAt(0) - 'a'.charCodeAt(0);
-  }
-  return 0;
-}
-
-/**
- * インデックスからプレフィックスを取得
- */
-export function indexToPrefix(index: number): string {
-  const normalized = ((index % 26) + 26) % 26;
-  return String.fromCharCode('a'.charCodeAt(0) + normalized);
+export function formatPhoneForDisplay(phone: string): string {
+  const trimmed = (phone ?? '').trim();
+  if (PHONE_NUMBER_PATTERN.test(trimmed)) return trimmed;
+  if (/^[\d\s-]+$/.test(trimmed)) return canonicalizePhone(trimmed);
+  return trimmed;
 }
