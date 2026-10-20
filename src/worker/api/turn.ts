@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import type { Env } from '../types';
+import type { Env, RTCIceServer } from '../types';
 
 const turn = new Hono<{ Bindings: Env; Variables: { userId: number } }>();
 
@@ -47,7 +47,7 @@ async function fetchCloudflareTurnCredentials(env: Env, ttl = 86400): Promise<{ 
       return null;
     }
     
-    const data = await response.json();
+    const data = await response.json() as { iceServers: RTCIceServer[] };
     return { iceServers: data.iceServers };
   } catch (e) {
     console.error('Cloudflare TURN fetch error:', e);

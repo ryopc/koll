@@ -42,7 +42,11 @@ function base64UrlDecode(str: string): Uint8Array {
   const padding = '='.repeat((4 - (str.length % 4)) % 4);
   const base64 = (str + padding).replace(/-/g, '+').replace(/_/g, '/');
   const raw = atob(base64);
-  return new Uint8Array([...raw].map(c => c.charCodeAt(0)));
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) {
+    arr[i] = raw.charCodeAt(i);
+  }
+  return arr;
 }
 
 /**
@@ -75,7 +79,7 @@ export async function subscribeToPush(): Promise<PushSubscriptionData | null> {
     // 新規購読
     subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: base64UrlDecode(vapidPublicKey),
+      applicationServerKey: base64UrlDecode(vapidPublicKey) as unknown as BufferSource,
     });
     
     // サーバーに送信
@@ -118,8 +122,7 @@ export async function unsubscribeFromPush(): Promise<boolean> {
  * PushSubscription をデータオブジェクトに変換
  */
 function subscriptionToData(subscription: PushSubscription): PushSubscriptionData {
-  const keys: Record<string, string> = {};
-  const rawKeys = subscription.getKey ? subscription.getKey('p256dh') : null;
+  const keys: { p256dh: string; auth: string } = { p256dh: '', auth: '' };
   
   if (subscription.getKey) {
     const p256dh = subscription.getKey('p256dh');

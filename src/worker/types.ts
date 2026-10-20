@@ -13,6 +13,12 @@ export interface RTCIceCandidateInit {
   usernameFragment?: string | null;
 }
 
+export interface RTCIceServer {
+  urls: string | string[];
+  username?: string;
+  credential?: string;
+}
+
 // シグナリングメッセージ
 export type SignalMessage =
   | { type: 'join'; roomId: string; userId: string }
@@ -67,6 +73,10 @@ export interface Env {
   CALL_ROOM: DurableObjectNamespace;
   DB: D1Database;
   JWT_SECRET: string;
+  VAPID_PUBLIC_KEY: string;
+  VAPID_PRIVATE_KEY: string;
+  TURN_KEY_ID: string;
+  TURN_API_TOKEN: string;
 }
 
 // Hono の Context 型拡張

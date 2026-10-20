@@ -4,6 +4,9 @@ import { SignalingClient } from './signaling.js';
 import { WebRTCManager } from './webrtc.js';
 import { register, login, logout, fetchMe, isAuthenticated, getToken, clearAuth } from './auth.js';
 import { storePhoneNumber, getStoredPhoneNumber, clearPhoneNumber } from './phoneNumber.js';
+import { getContacts, addContact, updateContact, deleteContact, lookupContactName, formatContactPhone, validateContactPhone } from './contacts.js';
+import { subscribeToPush, unsubscribeFromPush, requestNotificationPermission, isPushSupported } from './push.js';
+import { buildRTCConfiguration } from './turn.js';
 
 // 状態管理
 type AppState = 'auth' | 'idle' | 'calling' | 'in-call' | 'incoming';
@@ -15,9 +18,18 @@ interface CallInfo {
   timerInterval: number | null;
 }
 
+interface Contact {
+  id: number;
+  contact_phone: string;
+  display_name: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
 let currentState: AppState = 'auth';
 let currentCall: CallInfo | null = null;
 let signaling: SignalingClient | null = null;
+let currentContacts: Contact[] = [];
 const webrtc = new WebRTCManager();
 
 // DOM 要素キャッシュ
@@ -50,6 +62,11 @@ const els = {
   callBtn: document.getElementById('call-btn')!,
   clearBtn: document.getElementById('clear-btn')!,
   
+  // Contacts
+  contactsList: document.getElementById('contacts-list')!,
+  contactsSearch: document.getElementById('contacts-search') as HTMLInputElement,
+  addContactBtn: document.getElementById('add-contact-btn')!,
+  
   // History
   historyList: document.getElementById('history-list')!,
   
@@ -73,6 +90,15 @@ const els = {
   speakerBtn: document.getElementById('speaker-btn')!,
   holdBtn: document.getElementById('hold-btn')!,
   hangupBtn: document.getElementById('hangup-btn')!,
+  
+  // Contact modal
+  contactModal: document.getElementById('contact-modal')!,
+  contactForm: document.getElementById('contact-form') as HTMLFormElement,
+  contactId: document.getElementById('contact-id') as HTMLInputElement,
+  contactPhone: document.getElementById('contact-phone') as HTMLInputElement,
+  contactName: document.getElementById('contact-name') as HTMLInputElement,
+  contactError: document.getElementById('contact-error')!,
+  contactCancelBtn: document.getElementById('contact-cancel-btn')!,
   
   // Toast
   toastContainer: document.getElementById('toast-container')!,
@@ -165,6 +191,11 @@ function formatPhoneForDisplay(phone: string): string {
   return phone.replace(/^ph([a-z])-(\d{4})(\d{4})$/, 'ph$1-$2-$3');
 }
 
+function getContactDisplayName(phone: string): string {
+  const contact = currentContacts.find(c => c.contact_phone === phone);
+  return contact?.display_name || formatPhoneForDisplay(phone);
+}
+
 // Toast 通知
 function showToast(message: string, type: 'success' | 'error' | 'warning' = 'success'): void {
   const toast = document.createElement('div');
@@ -199,6 +230,11 @@ function switchTab(tabId: string): void {
     panel.classList.toggle('active', isActive);
     panel.classList.toggle('hidden', !isActive);
   });
+  
+  // タブ切り替え時の処理
+  if (tabId === 'contacts') {
+    loadContacts();
+  }
 }
 
 // モーダル表示/非表示
@@ -215,9 +251,10 @@ function hideModal(modal: HTMLElement): void {
 }
 
 // 着信モーダル表示
-function showIncomingCall(fromNumber: string): void {
+async function showIncomingCall(fromNumber: string): Promise<void> {
   els.incomingNumber.textContent = formatPhoneForDisplay(fromNumber);
-  els.incomingName.textContent = ''; // 将来的に連絡先名対応
+  const name = await lookupContactName(fromNumber);
+  els.incomingName.textContent = name || '';
   showModal(els.incomingModal);
   currentState = 'incoming';
 }
@@ -262,7 +299,7 @@ function updateCallControls(): void {
   if (!currentCall) return;
   
   els.muteBtn.setAttribute('aria-pressed', webrtc.isMuted.toString());
-  els.holdBtn.setAttribute('aria-pressed', 'false'); // hold状態管理は後で
+  els.holdBtn.setAttribute('aria-pressed', 'false');
 }
 
 // 認証フロー
@@ -340,21 +377,49 @@ async function initAfterAuth(): Promise<void> {
   // Signaling 接続
   await connectSignaling(user.phone_number);
   
-  // WebRTC ローカルストリーム取得
+  // WebRTC 設定取得・ローカルストリーム取得
   try {
+    const rtcConfig = await buildRTCConfiguration();
+    // WebRTCManager に設定を適用（内部で再作成）
     await webrtc.getLocalStream();
   } catch (e) {
     showToast('マイクの許可が必要です', 'warning');
   }
   
+  // Push 通知セットアップ
+  await setupPushNotifications();
+  
   // 履歴表示
   renderHistory();
+  
+  // 連絡先読み込み
+  await loadContacts();
   
   // PWA インストールボタン
   setupInstallPrompt();
   
   // 画面切り替え
   showScreen('phone');
+}
+
+async function setupPushNotifications(): Promise<void> {
+  if (!isPushSupported()) {
+    console.log('Push notifications not supported');
+    return;
+  }
+  
+  const permission = await requestNotificationPermission();
+  if (permission !== 'granted') {
+    console.log('Push notification permission not granted');
+    return;
+  }
+  
+  try {
+    await subscribeToPush();
+    console.log('Push subscription successful');
+  } catch (e) {
+    console.error('Push subscribe error:', e);
+  }
 }
 
 async function connectSignaling(phoneNumber: string): Promise<void> {
@@ -512,9 +577,6 @@ async function acceptCall(): Promise<void> {
   
   try {
     await webrtc.getLocalStream();
-    
-    // 相手からの offer を待つ（handleOffer で処理済み）
-    // ここでは ICE candidate などの交換を待つ
   } catch (e) {
     console.error('Accept call error:', e);
     endCall('接続に失敗しました');
@@ -606,7 +668,7 @@ async function handleLogout(): Promise<void> {
 function handleDialInput(digit: string): void {
   if (currentState !== 'idle') return;
   const current = els.dialInput.value;
-  if (current.length < 20) { // 最大長制限
+  if (current.length < 20) {
     els.dialInput.value = current + digit;
   }
 }
@@ -619,6 +681,156 @@ function handleBackspace(): void {
 function handleClear(): void {
   if (currentState !== 'idle') return;
   els.dialInput.value = '';
+}
+
+// 連絡先機能
+async function loadContacts(query?: string): Promise<void> {
+  currentContacts = await getContacts(query);
+  renderContacts();
+}
+
+function renderContacts(): void {
+  if (currentContacts.length === 0) {
+    els.contactsList.innerHTML = '<p class="empty-state">連絡先がありません</p>';
+    return;
+  }
+  
+  els.contactsList.innerHTML = currentContacts.map(contact => `
+    <div class="contact-item" data-id="${contact.id}" data-phone="${contact.contact_phone}">
+      <div class="contact-avatar">${contact.display_name?.[0]?.toUpperCase() || contact.contact_phone.slice(3, 4).toUpperCase()}</div>
+      <div class="contact-info">
+        <div class="contact-name">${contact.display_name || formatContactPhone(contact.contact_phone)}</div>
+        <div class="contact-phone">${formatContactPhone(contact.contact_phone)}</div>
+      </div>
+      <div class="contact-actions">
+        <button class="contact-action-btn call" aria-label="発信" data-phone="${contact.contact_phone}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          </svg>
+        </button>
+        <button class="contact-action-btn edit" aria-label="編集" data-id="${contact.id}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </button>
+        <button class="contact-action-btn delete" aria-label="削除" data-id="${contact.id}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+  
+  // イベントリスナー追加
+  els.contactsList.querySelectorAll('.contact-action-btn.call').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const phone = (e.currentTarget as HTMLElement).dataset.phone!;
+      els.dialInput.value = phone;
+      makeCall();
+    });
+  });
+  
+  els.contactsList.querySelectorAll('.contact-action-btn.edit').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = parseInt((e.currentTarget as HTMLElement).dataset.id!, 10);
+      openContactModal(id);
+    });
+  });
+  
+  els.contactsList.querySelectorAll('.contact-action-btn.delete').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = parseInt((e.currentTarget as HTMLElement).dataset.id!, 10);
+      if (confirm('この連絡先を削除しますか？')) {
+        const success = await deleteContact(id);
+        if (success) {
+          showToast('連絡先を削除しました', 'success');
+          loadContacts(els.contactsSearch.value);
+        } else {
+          showToast('削除に失敗しました', 'error');
+        }
+      }
+    });
+  });
+}
+
+// 連絡先検索
+function handleContactsSearch(): void {
+  const query = els.contactsSearch.value.trim();
+  loadContacts(query || undefined);
+}
+
+// 連絡先モーダル
+let editingContactId: number | null = null;
+
+function openContactModal(id?: number): void {
+  editingContactId = id || null;
+  
+  if (id) {
+    const contact = currentContacts.find(c => c.id === id);
+    if (contact) {
+      els.contactModal.querySelector('h2')!.textContent = '連絡先を編集';
+      els.contactPhone.value = formatContactPhone(contact.contact_phone);
+      els.contactPhone.disabled = true;
+      els.contactName.value = contact.display_name || '';
+      els.contactId.value = id.toString();
+    }
+  } else {
+    els.contactModal.querySelector('h2')!.textContent = '連絡先を追加';
+    els.contactPhone.value = '';
+    els.contactPhone.disabled = false;
+    els.contactName.value = '';
+    els.contactId.value = '';
+  }
+  
+  els.contactError.classList.add('hidden');
+  showModal(els.contactModal);
+}
+
+async function handleContactSubmit(e: SubmitEvent): Promise<void> {
+  e.preventDefault();
+  
+  const phone = els.contactPhone.value.trim();
+  const name = els.contactName.value.trim() || null;
+  
+  if (!validateContactPhone(phone)) {
+    showContactError('電話番号の形式が正しくありません (phx-xxxx-xxxx)');
+    return;
+  }
+  
+  try {
+    let success: boolean;
+    if (editingContactId) {
+      success = await updateContact(editingContactId, name ?? null);
+    } else {
+      const contact = await addContact(phone, name ?? undefined);
+      success = !!contact;
+    }
+    
+    if (success) {
+      showToast(editingContactId ? '連絡先を更新しました' : '連絡先を追加しました', 'success');
+      hideModal(els.contactModal);
+      loadContacts(els.contactsSearch.value);
+    } else {
+      showContactError('保存に失敗しました');
+    }
+  } catch (e: any) {
+    if (e.message?.includes('UNIQUE') || e.message?.includes('unique')) {
+      showContactError('この番号は既に登録されています');
+    } else {
+      showContactError('保存に失敗しました');
+    }
+  }
+}
+
+function showContactError(message: string): void {
+  els.contactError.textContent = message;
+  els.contactError.classList.remove('hidden');
 }
 
 // PWA インストールプロンプト
@@ -699,6 +911,12 @@ function setupEventListeners(): void {
   els.clearBtn.addEventListener('click', handleClear);
   els.callBtn.addEventListener('click', makeCall);
   
+  // Contacts
+  els.contactsSearch.addEventListener('input', handleContactsSearch);
+  els.addContactBtn.addEventListener('click', () => openContactModal());
+  els.contactForm.addEventListener('submit', handleContactSubmit);
+  els.contactCancelBtn.addEventListener('click', () => hideModal(els.contactModal));
+  
   // Incoming
   els.acceptBtn.addEventListener('click', acceptCall);
   els.declineBtn.addEventListener('click', declineCall);
@@ -716,7 +934,7 @@ function setupEventListeners(): void {
   // Keyboard support for dial input
   document.addEventListener('keydown', (e) => {
     if (currentState !== 'idle') return;
-    if (e.target === els.dialInput) return; // input focus 時は無視
+    if (e.target === els.dialInput) return;
     
     if (e.key >= '0' && e.key <= '9') {
       handleDialInput(e.key);
@@ -752,6 +970,13 @@ function setupEventListeners(): void {
   webrtc.on('error', (error) => {
     console.error('[UI] WebRTC error:', error);
     showToast('通話エラー: ' + error.message, 'error');
+  });
+  
+  // Contact modal close on backdrop click
+  els.contactModal.addEventListener('click', (e) => {
+    if (e.target === els.contactModal) {
+      hideModal(els.contactModal);
+    }
   });
 }
 
