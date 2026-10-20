@@ -26,7 +26,7 @@
   "vars": {
     "COTURN_HOST": "turn.ryopc.org",
     "COTURN_PORT": "3478",
-    "COTURN_TLS_PORT": "8443",
+    "COTURN_TLS_PORT": "8443"
   },
   "migrations": [
     {
