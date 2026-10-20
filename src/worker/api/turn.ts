@@ -36,9 +36,9 @@ function getTurnConfig(env: Env): {
   
   if (coturnHost && coturnUsername && coturnPassword) {
     const urls = [
-      `turn:${coturnHost}:${coturnPort}?transport=udp`,
-      `turn:${coturnHost}:${coturnPort}?transport=tcp`,
-      `turns:${coturnHost}:${coturnTlsPort}?transport=tcp`,
+      `turns:${coturnHost}:${coturnTlsPort}?transport=tcp`,  // 1. TLS (暗号化・最優先)
+      `turn:${coturnHost}:${coturnPort}?transport=tcp`,      // 2. TCP フォールバック
+      `turn:${coturnHost}:${coturnPort}?transport=udp`,      // 3. UDP フォールバック
     ];
     return {
       urls,
