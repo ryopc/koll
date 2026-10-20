@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/wrangler.jsonc",
+  "name": "koll-phone",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2024-10-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "dist",
+    "binding": "ASSETS"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "CALL_ROOM",
+        "class_name": "CallRoom"
+      }
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "koll-phone-db",
+      "database_id": "<your-database-id>"
+    }
+  ],
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["CallRoom"]
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
