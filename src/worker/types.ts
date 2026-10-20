@@ -77,6 +77,11 @@ export interface Env {
   VAPID_PRIVATE_KEY: string;
   TURN_KEY_ID: string;
   TURN_API_TOKEN: string;
+  COTURN_HOST: string;
+  COTURN_USERNAME: string;
+  COTURN_PASSWORD: string;
+  COTURN_PORT: string;
+  COTURN_TLS_PORT: string;
 }
 
 // Hono の Context 型拡張

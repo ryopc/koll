@@ -28,6 +28,11 @@
     "VAPID_PRIVATE_KEY": "",
     "TURN_KEY_ID": "",
     "TURN_API_TOKEN": "",
+    "COTURN_HOST": "turn.ryopc.org",
+    "COTURN_USERNAME": "",
+    "COTURN_PASSWORD": "",
+    "COTURN_PORT": "3478",
+    "COTURN_TLS_PORT": "8443",
     "JWT_SECRET": "dev-secret-change-in-production"
   },
   "migrations": [
