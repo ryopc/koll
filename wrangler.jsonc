@@ -23,6 +23,13 @@
       "database_id": "<your-database-id>"
     }
   ],
+  "vars": {
+    "VAPID_PUBLIC_KEY": "",
+    "VAPID_PRIVATE_KEY": "",
+    "TURN_KEY_ID": "",
+    "TURN_API_TOKEN": "",
+    "JWT_SECRET": "dev-secret-change-in-production"
+  },
   "migrations": [
     {
       "tag": "v1",

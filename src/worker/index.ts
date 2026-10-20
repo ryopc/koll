@@ -2,6 +2,9 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { CallRoom } from './durable-objects/CallRoom';
 import auth from './api/auth';
+import push from './api/push';
+import contacts from './api/contacts';
+import turn from './api/turn';
 import type { Env } from './types';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -9,13 +12,16 @@ const app = new Hono<{ Bindings: Env }>();
 // CORS 設定
 app.use('*', cors({
   origin: '*',
-  allowMethods: ['GET', 'POST', 'OPTIONS'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
 
-// 認証 API ルート
+// API ルート
 app.route('/api/auth', auth);
+app.route('/api/push', push);
+app.route('/api/contacts', contacts);
+app.route('/api/turn', turn);
 
 // ヘルスチェック
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: Date.now() }));

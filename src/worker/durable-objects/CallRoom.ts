@@ -1,7 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { Env, SignalMessage, RoomState, CallState } from '../types';
+import { sendPushNotification } from '../api/push';
 
-const PREFIXES = 'abcdefghijklmnopqrstuvwxyz'.split('');
 const ROOM_TTL_MS = 30 * 60 * 1000; // 30分
 
 export class CallRoom extends DurableObject<Env> {
@@ -80,6 +80,10 @@ export class CallRoom extends DurableObject<Env> {
       existing.close(1000, 'Superseded by new tab');
     }
 
+    // ルーム参加前の参加者数をチェック
+    const wasEmpty = this.state.participants.size === 0;
+    const hadOneParticipant = this.state.participants.size === 1;
+
     this.state.participants.set(phone, ws);
     this.state.lastActivity = Date.now();
     this.setAlarm();
@@ -87,14 +91,19 @@ export class CallRoom extends DurableObject<Env> {
     // 参加通知を他の参加者に送信
     this.broadcastExcept(phone, { type: 'peer-joined', userId: phone });
 
-    // 着信側が既にいる場合、発信側に着信通知
-    if (this.state.participants.size === 2) {
-      const [caller, callee] = Array.from(this.state.participants.keys());
-      // 後から入ってきた方が発信側（caller）とする
-      const callerWs = this.state.participants.get(caller);
-      if (callerWs) {
-        callerWs.send(JSON.stringify({ type: 'calling', from: callee }));
+    // 着信処理
+    if (hadOneParticipant) {
+      // 既に1人いる（着信側が待機中） -> 発信側が参加
+      const callee = Array.from(this.state.participants.keys()).find(p => p !== phone);
+      if (callee) {
+        const callerWs = this.state.participants.get(phone);
+        if (callerWs) {
+          callerWs.send(JSON.stringify({ type: 'calling', from: callee }));
+        }
       }
+    } else if (wasEmpty) {
+      // 誰もいない（着信側が最初に参加） -> 相手が後で来るのを待つ
+      // 何もしない（相手が join した時に calling 送信）
     }
 
     ws.addEventListener('message', (event) => {
@@ -136,7 +145,7 @@ export class CallRoom extends DurableObject<Env> {
     }
   }
 
-  private handleLeave(phone: string): void {
+  private async handleLeave(phone: string): Promise<void> {
     this.state.participants.delete(phone);
     this.broadcastExcept(phone, { type: 'peer-left', userId: phone });
 
@@ -152,6 +161,47 @@ export class CallRoom extends DurableObject<Env> {
     for (const [phone, ws] of this.state.participants) {
       if (phone !== excludePhone && ws.readyState === WebSocket.OPEN) {
         ws.send(data);
+      }
+    }
+  }
+
+  /**
+   * 着信側がオンライン（WebSocket 接続中）かチェック
+   */
+  private isCalleeOnline(calleePhone: string): boolean {
+    const ws = this.state.participants.get(calleePhone);
+    return ws !== undefined && ws.readyState === WebSocket.OPEN;
+  }
+
+  /**
+   * 発信者が join した際、着信側がオフラインなら Push 通知送信
+   */
+  private async notifyCalleeIfOffline(callerPhone: string, calleePhone: string): Promise<void> {
+    // 着信側がこのルームにいない（オフライン）場合のみ Push 送信
+    if (!this.isCalleeOnline(calleePhone)) {
+      try {
+        // 着信側のユーザーID取得
+        const calleeUser = await this.env.DB.prepare(
+          'SELECT id FROM users WHERE phone_number = ?'
+        ).bind(calleePhone).first<{ id: number }>();
+        
+        if (calleeUser) {
+          await sendPushNotification(this.env, calleeUser.id, {
+            title: 'Koll 着信',
+            body: `${callerPhone} から着信があります`,
+            data: {
+              type: 'incoming-call',
+              from: callerPhone,
+              roomId: calleePhone,
+            },
+            actions: [
+              { action: 'answer', title: '応答' },
+              { action: 'decline', title: '拒否' },
+            ],
+          });
+        }
+      } catch (e) {
+        console.error('Push notification failed:', e);
       }
     }
   }

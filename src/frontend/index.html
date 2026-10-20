@@ -92,6 +92,15 @@
           </svg>
           <span>ダイヤル</span>
         </button>
+        <button id="tab-contacts" class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-contacts">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>連絡先</span>
+        </button>
         <button id="tab-history" class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-history">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
@@ -147,6 +156,25 @@
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </button>
+          </div>
+        </div>
+
+        <!-- 連絡先パネル -->
+        <div id="panel-contacts" class="tab-panel hidden" role="tabpanel" aria-labelledby="tab-contacts">
+          <div class="contacts-header">
+            <div class="contacts-search">
+              <input type="search" id="contacts-search" placeholder="連絡先を検索..." aria-label="連絡先検索">
+            </div>
+            <button id="add-contact-btn" class="btn btn-primary btn-sm" aria-label="連絡先追加">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>追加</span>
+            </button>
+          </div>
+          <div id="contacts-list" class="contacts-list">
+            <p class="empty-state">連絡先がありません</p>
           </div>
         </div>
 
@@ -249,6 +277,32 @@
 
     <!-- トースト通知 -->
     <div id="toast-container" class="toast-container" role="region" aria-live="polite"></div>
+
+    <!-- 連絡先追加/編集モーダル -->
+    <div id="contact-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+      <div class="modal-content">
+        <h2 id="contact-modal-title">連絡先を追加</h2>
+        <form id="contact-form">
+          <input type="hidden" id="contact-id">
+          <div class="form-group">
+            <label for="contact-phone">電話番号</label>
+            <input type="tel" id="contact-phone" name="phone" required placeholder="phx-xxxx-xxxx" aria-describedby="phone-help">
+            <p id="phone-help" class="form-help">形式: pha-xxxx-xxxx (英小文字 + 8桁数字)</p>
+          </div>
+          <div class="form-group">
+            <label for="contact-name">表示名（任意）</label>
+            <input type="text" id="contact-name" name="name" maxlength="30" placeholder="表示名">
+          </div>
+          <div class="form-group">
+            <div id="contact-error" class="error-message hidden" role="alert"></div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="contact-cancel-btn" class="btn btn-ghost">キャンセル</button>
+            <button type="submit" class="btn btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="main.ts"></script>

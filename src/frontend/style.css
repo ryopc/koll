@@ -816,6 +816,190 @@ body {
   display: none !important;
 }
 
+/* Contacts Panel */
+.contacts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: calc(120px + var(--safe-top));
+  background: var(--bg-secondary);
+  z-index: 98;
+}
+
+.contacts-search {
+  flex: 1;
+  max-width: 100%;
+}
+
+.contacts-search input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  color: var(--fg-primary);
+  transition: border-color var(--transition-fast);
+}
+
+.contacts-search input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.15);
+}
+
+.contacts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  padding-bottom: calc(16px + var(--safe-bottom));
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.contact-item:hover,
+.contact-item:active {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+}
+
+.contact-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+  font-weight: 600;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-name {
+  font-weight: 500;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contact-phone {
+  font-family: 'SF Mono', 'Monaco', monospace;
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+
+.contact-actions {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.contact-item:hover .contact-actions,
+.contact-item:focus-within .contact-actions {
+  opacity: 1;
+}
+
+.contact-action-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  color: var(--fg-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.contact-action-btn:hover {
+  background: var(--bg-card);
+  color: var(--fg-primary);
+  border-color: var(--accent-primary);
+}
+
+.contact-action-btn.delete:hover {
+  background: rgba(255, 71, 87, 0.15);
+  color: #ff6b6b;
+  border-color: rgba(255, 71, 87, 0.3);
+}
+
+/* Contact Modal */
+#contact-modal .modal-content {
+  max-width: 360px;
+  text-align: left;
+}
+
+#contact-modal .form-group {
+  margin-bottom: 16px;
+}
+
+#contact-modal .form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-secondary);
+  margin-bottom: 6px;
+}
+
+#contact-modal .form-group input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--fg-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+#contact-modal .form-group input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.15);
+}
+
+#contact-modal .form-help {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 4px;
+}
+
+#contact-modal .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+#contact-modal .modal-actions .btn {
+  min-width: 80px;
+}
+
 /* PWA Install Prompt */
 @media (display-mode: standalone) {
   #install-btn {
