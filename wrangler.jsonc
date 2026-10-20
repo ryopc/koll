@@ -20,7 +20,7 @@
     {
       "binding": "DB",
       "database_name": "koll-phone-db",
-      "database_id": "<your-database-id>"
+      "database_id": "e49ed841-dc5a-4465-93f3-e7ce0f825393"
     }
   ],
   "vars": {
